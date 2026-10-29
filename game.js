@@ -69,12 +69,18 @@ let voice=portuguese.find(v=>male.test(v.name)&&!/female/i.test(v.name))||portug
 const phrases=['Pega ele!','Vem aqui','Vou te pegar','Vem nenem!'];let shout=new SpeechSynthesisUtterance(phrases[Math.floor(Math.random()*phrases.length)]);shout.lang='pt-BR';if(voice)shout.voice=voice;shout.pitch=.65;shout.rate=1.15;shout.volume=1;lastGuardShout=worldTime;speechSynthesis.speak(shout);
 }
 function drawRunner(x,y,{guard=false,seated=false,phase=0,animate=false}={}){
-let stride=animate?Math.sin(worldTime*15+phase):0,bounce=animate?Math.abs(Math.cos(worldTime*15+phase))*2:0;
-c.save();c.translate(x,y);rect(-13,17,26,5,'#24203755');c.translate(0,-bounce);
+let stride=animate&&!seated?Math.sin(worldTime*13+phase):0,bounce=animate&&!seated?Math.abs(Math.sin(worldTime*13+phase))*4:0;
+c.save();c.translate(x,y);rect(-16,23,32,5,'#24203755');c.translate(0,-bounce);
 const skin='#dfab84',legs=guard?(level===3?skin:'#711d35'):'#273f4c';
-rect(-10,5+stride*6,7,seated?8:15,legs);rect(3,5-stride*6,7,seated?8:15,legs);
-if(!seated){rect(-12,18+stride*6,10,5,'#292238');rect(3,18-stride*6,10,5,'#292238')}
-rect(-18,-7-stride*7,6,14,skin);rect(12,-7+stride*7,6,14,skin);
+function limb(ax,ay,bx,by,cx,cy,color,width){c.strokeStyle=color;c.lineWidth=width;c.lineCap='square';c.lineJoin='round';c.beginPath();c.moveTo(ax,ay);c.lineTo(bx,by);c.lineTo(cx,cy);c.stroke()}
+if(seated){rect(-10,5,7,8,legs);rect(3,5,7,8,legs);rect(-18,-7,6,14,skin);rect(12,-7,6,14,skin)}else{
+// Bent knees and opposing elbow swings make the forward run readable on phones.
+for(const side of [-1,1]){let swing=stride*side,footX=side*(9+Math.abs(swing)*5),footY=22+swing*12;
+limb(side*6,7,side*(8+Math.max(0,-swing)*7),16+swing*5,footX,footY,legs,7);
+rect(footX-5,footY-2,11,6,'#292238');rect(footX-5,footY+3,11,2,'#f9e7ce');
+limb(side*12,-9,side*(19+Math.abs(swing)*3),-3-swing*9,side*17,5-swing*13,skin,6);
+}
+}
 rect(-12,-13,24,23,guard?'#d63050':'#ffd64f');rect(-8,-27,16,16,skin);rect(-9,-29,18,7,guard?'#8e183e':'#33382e');
 if(guard){rect(-13,-31,26,9,'#8e183e');rect(-4,-29,8,4,'#ffdd54');rect(-6,-21,4,3,'#251345');rect(3,-21,4,3,'#251345');guardOutfit()}
 c.restore();}
