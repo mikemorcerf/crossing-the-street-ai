@@ -58,7 +58,7 @@ else if(level===1){for(const x of [0,520]){rect(x,y,40,120,'#7b9a4c');for(let n=
 else if(level===5){rect(50,y,5,120,'#ffdc58');rect(505,y,5,120,'#ffdc58');rect(276,y,8,55,'#fff8dc');for(const x of [12,535]){rect(x,y,13,12,'#68e9f5');rect(x,y+60,13,12,'#68e9f5')}for(let n=0;n<4;n++)rect(190+n*48,y+85,25,25,'#ffffff')}
 else{rect(276,y,8,48,'#ffe1ab');for(const x of [0,526]){rect(x,y,34,100,level===4?['#f1b34e','#ea7798','#6bd3d1'][Math.abs(Math.floor(y/120))%3]:'#8a8cad');rect(x+7,y+12,18,20,'#352b55');rect(x+7,y+50,18,20,'#352b55')}if(level===4){for(let x=60;x<500;x+=40){c.fillStyle=x%80?'#ffdf53':'#ef6b9a';c.beginPath();c.moveTo(x,y);c.lineTo(x+22,y);c.lineTo(x+11,y+17);c.fill()}}}}
 }
-function guardOutfit(g){if(level===3){rect(-11,4,8,16,'#e9a582');rect(3,4,8,16,'#e9a582');rect(-16,-14,32,20,'#e9a582');rect(-12,4,24,8,'#e12a50');rect(-15,-13,30,5,'#e12a50');rect(-13,-31,26,9,'#f34869')}else if(level===1){rect(-21,-30,42,5,'#ce8466');rect(-11,-39,22,10,'#a6334b');rect(-13,-3,26,12,'#8f243f')}else if(level===2){rect(-16,-14,9,23,'#ff6475');rect(7,-14,9,23,'#ff6475')}else if(level===4){rect(-20,-30,40,5,'#f1627b');rect(-6,-13,12,5,'#ffe2a5')}else if(level===5){rect(-15,-12,30,5,'#ff9aa5');rect(-15,0,30,4,'#ff9aa5');rect(-16,-23,4,15,'#2d2444')}}
+function guardOutfit(g){if(level===3){rect(-16,-14,32,20,'#e9a582');rect(-12,4,24,8,'#e12a50');rect(-15,-13,30,5,'#e12a50');rect(-13,-31,26,9,'#f34869')}else if(level===1){rect(-21,-30,42,5,'#ce8466');rect(-11,-39,22,10,'#a6334b');rect(-13,-3,26,12,'#8f243f')}else if(level===2){rect(-16,-14,9,23,'#ff6475');rect(7,-14,9,23,'#ff6475')}else if(level===4){rect(-20,-30,40,5,'#f1627b');rect(-6,-13,12,5,'#ffe2a5')}else if(level===5){rect(-15,-12,30,5,'#ff9aa5');rect(-15,0,30,4,'#ff9aa5');rect(-16,-23,4,15,'#2d2444')}}
 let lastGuardShout=-Infinity;
 function guardShout(){if(muted||!('speechSynthesis'in window)||worldTime-lastGuardShout<2.5)return;
 // Avoid building a speech queue behind stage announcements.
@@ -68,6 +68,16 @@ let male=/male|masculin|antonio|antônio|daniel|duarte|felipe|ricardo|joao|joão
 let voice=portuguese.find(v=>male.test(v.name)&&!/female/i.test(v.name))||portuguese[0];
 const phrases=['Pega ele!','Vem aqui','Vou te pegar','Vem nenem!'];let shout=new SpeechSynthesisUtterance(phrases[Math.floor(Math.random()*phrases.length)]);shout.lang='pt-BR';if(voice)shout.voice=voice;shout.pitch=.65;shout.rate=1.15;shout.volume=1;lastGuardShout=worldTime;speechSynthesis.speak(shout);
 }
+function drawRunner(x,y,{guard=false,seated=false,phase=0,animate=false}={}){
+let stride=animate?Math.sin(worldTime*15+phase):0,bounce=animate?Math.abs(Math.cos(worldTime*15+phase))*2:0;
+c.save();c.translate(x,y);rect(-13,17,26,5,'#24203755');c.translate(0,-bounce);
+const skin='#dfab84',legs=guard?(level===3?skin:'#711d35'):'#273f4c';
+rect(-10,5+stride*6,7,seated?8:15,legs);rect(3,5-stride*6,7,seated?8:15,legs);
+if(!seated){rect(-12,18+stride*6,10,5,'#292238');rect(3,18-stride*6,10,5,'#292238')}
+rect(-18,-7-stride*7,6,14,skin);rect(12,-7+stride*7,6,14,skin);
+rect(-12,-13,24,23,guard?'#d63050':'#ffd64f');rect(-8,-27,16,16,skin);rect(-9,-29,18,7,guard?'#8e183e':'#33382e');
+if(guard){rect(-13,-31,26,9,'#8e183e');rect(-4,-29,8,4,'#ffdd54');rect(-6,-21,4,3,'#251345');rect(3,-21,4,3,'#251345');guardOutfit()}
+c.restore();}
 function draw(dt){
 if(finale){drawFinale();return}
 const moving=running&&!paused&&!flight;
@@ -77,9 +87,9 @@ for(const g of guards){g.age+=dt;let dx=player.x-g.x;g.x+=Math.sign(dx)*Math.min
 guards=guards.filter(g=>g.y<760&&g.y>-100&&g.age<12);
 }
 scenery();drawTraffic();
-for(const g of guards){if(level===2)drawBoat(g.x,g.y,true);c.save();c.translate(g.x,g.y);rect(-13,15,26,6,'#24203766');rect(-11,4,8,16,'#711d35');rect(3,4,8,16,'#711d35');rect(-16,-14,32,23,'#d63050');rect(-9,-27,18,16,'#e9a582');rect(-13,-31,26,9,'#8e183e');rect(-4,-29,8,4,'#ffdd54');rect(-6,-21,4,3,'#251345');rect(3,-21,4,3,'#251345');guardOutfit(g);c.restore()}
+for(const g of guards){if(level===2)drawBoat(g.x,g.y,true);drawRunner(g.x,g.y,{guard:true,seated:level===2,phase:g.x*.04,animate:level!==2&&running})}
 
-if(flight){rect(0,0,560,672,'#88bcc9');for(let i=0;i<8;i++){let y=(i*120+flight*50)%760-70;rect(i%2*280+30,y,160,30,'#d9e7df')}c.save();c.translate(280,330);rect(-12,-65,24,130,'#f7f4dc');rect(-100,-5,200,22,'#f7f4dc');rect(-44,48,88,15,'#f7f4dc');rect(-8,-40,16,22,'#304e5d');c.restore();c.fillStyle='#203e4b';c.font='bold 19px sans-serif';c.textAlign='center';c.fillText('NEXT STOP: NEW YORK',280,530)}else if(!inv||Math.floor(inv*10)%2===0){let{x,y}=player;if(level===2)drawBoat(x,y);rect(x-12,y+13,28,7,'#253b3344');rect(x-9,y+5,7,14,'#273f4c');rect(x+3,y+5,7,14,'#273f4c');rect(x-12,y-13,24,23,'#ffd64f');rect(x-8,y-27,16,16,'#d69b70');rect(x-9,y-29,18,7,'#33382e');rect(x-17,y-8,5,15,'#d69b70');rect(x+12,y-8,5,15,'#d69b70')}
+if(flight){rect(0,0,560,672,'#88bcc9');for(let i=0;i<8;i++){let y=(i*120+flight*50)%760-70;rect(i%2*280+30,y,160,30,'#d9e7df')}c.save();c.translate(280,330);rect(-12,-65,24,130,'#f7f4dc');rect(-100,-5,200,22,'#f7f4dc');rect(-44,48,88,15,'#f7f4dc');rect(-8,-40,16,22,'#304e5d');c.restore();c.fillStyle='#203e4b';c.font='bold 19px sans-serif';c.textAlign='center';c.fillText('NEXT STOP: NEW YORK',280,530)}else if(!inv||Math.floor(inv*10)%2===0){let{x,y}=player;if(level===2)drawBoat(x,y);drawRunner(x,y,{seated:level===2,animate:level!==2&&running})}
 }
 // Scripted finale: board (5s), cruise (10s), land (5s), celebrate (10s).
 let finale=null,finaleTime=0;
@@ -108,7 +118,7 @@ function person(x,y,shirt,arms=false){rect(x-9,y+10,7,18,'#293451');rect(x+3,y+1
 function plane(x,y,scale=1){c.save();c.translate(x,y);c.scale(scale,scale);rect(-105,-16,210,34,'#fff5e1');rect(-22,-70,35,140,'#e0e4ef');rect(-95,-45,18,90,'#f65289');rect(60,-12,25,14,'#53b6cf');for(let i=-65;i<55;i+=25)rect(i,-10,12,10,'#50688a');rect(-47,5,18,29,'#34243b');c.restore()}
 function caption(text,y=90){c.textAlign='center';c.font='bold 25px sans-serif';c.fillStyle='#251345';c.fillText(text,280,y)}
 function drawFinale(){let t=finaleTime;rect(0,0,560,672,finale==='party'?'#ffe6ab':'#9dd8f3');
-if(finale==='boarding'){rect(0,300,560,372,'#73798a');for(let y=340;y<670;y+=90)rect(265,y,12,45,'#fff4c4');plane(320,290);let walk=Math.min(1,t/3.8);if(t<4.1)person(120+walk*162,560-walk*245,'#ffd64f');person(378,380,'#6b40bc',Math.sin(t*12)>0);rect(320,395,210,50,'#fff4c4');caption('Go! Go! Go!',429);caption('LAST CALL. FIRST CHANCE.');}
+if(finale==='boarding'){rect(0,300,560,372,'#73798a');for(let y=340;y<670;y+=90)rect(265,y,12,45,'#fff4c4');plane(320,290);let walk=Math.min(1,t/3.8);if(t<4.1)drawRunner(120+walk*162,560-walk*245,{animate:t<3.8});person(378,380,'#6b40bc',Math.sin(t*12)>0);rect(320,395,210,50,'#fff4c4');caption('Go! Go! Go!',429);caption('LAST CALL. FIRST CHANCE.');}
 else if(finale==='cruise'){for(let i=0;i<9;i++){let x=((i*157-(t-5)*90)%750+750)%750-150;rect(x,130+i%4*120,135,24,'#fff8e9')}plane(280+Math.sin(t)*15,330+Math.sin(t*2)*12);caption('NEXT STOP: NEW YORK');caption('Somewhere above the clouds…',585)}
 else{for(let i=0;i<10;i++){let h=80+(i*47)%145;rect(i*60,310-h,48,h,['#7965b5','#576c9e','#a276b2'][i%3]);for(let y=320-h;y<300;y+=25)rect(i*60+10,y,8,10,'#ffe69c')}rect(0,310,560,362,'#646783');rect(0,400,560,7,'#fff0b6');if(finale==='landing'){let f=Math.min(1,(t-15)/5);plane(70+f*290,150+f*215,.6+f*.4);caption('WELCOME TO NYC!')}else{plane(370,360,.65);for(let i=0;i<12;i++){let x=35+(i%6)*96,y=450+Math.floor(i/6)*150;person(x,y+Math.sin(t*6+i)*5,['#fa6b9c','#53cbd5','#9d73dd'][i%3],true)}person(280,510+Math.sin(t*7)*5,'#ffd64f',true);for(let i=0;i<90;i++){let x=(i*73+t*18)%560,y=(i*91+t*100)%672;rect(x,y,5,9,['#ff4c83','#ffdf38','#57e4ec','#9150d5'][i%4])}caption(t>25?'Congratulations!':'YOU MADE IT!',80);drawFireworks();caption('NEW YORK LOVES YOU.',120)}}}
 // Original looping stage themes. Null melody steps are intentional rests.
