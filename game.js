@@ -148,3 +148,5 @@ function releaseDrag(e){if(drag&&e.pointerId===drag.id){drag=null;target=null}}
 for(const event of ['pointerup','pointercancel','lostpointercapture'])canvas.addEventListener(event,releaseDrag);
 window.addEventListener('blur',()=>{drag=null});
 setup();requestAnimationFrame(frame);
+
+for(const event of ['contextmenu','selectstart','dragstart'])document.addEventListener(event,e=>e.preventDefault());
